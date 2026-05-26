@@ -7,9 +7,15 @@
 CLAUDE.local.md
 
 # =========================
+# Prompt nuovo di startup
+# =========================
+prompt-startup nuova sessione update collection.txt
+
+# =========================
 # Diagramma
 # =========================
 workflow.svg
+
 
 # =========================
 # Virtual environment (NON versionare mai, e nemmeno sincronizzare su Drive)
@@ -62,6 +68,11 @@ dist/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# =========================
+# Documentazione personale non versionata
+# =========================
+workflow.svg
 
 # =========================
 # Backup degli script di prova (mantenere fuori dal repo)

@@ -183,22 +183,33 @@ def regenerate_cache_xlsx(conn, output_path: Path) -> None:
 
 
 def generate_formula_snippets(expansions: dict, output_path: Path = LOOKUP_FORMULAS) -> None:
+    """
+    Genera le formule CERCA.X (Excel italiano) per ogni foglio, una per foglio.
+
+    Versione italiana: usa SE.ERRORE/CERCA.X/MAIUSC/MINUSC/SE e separatore ';'.
+    Se in futuro serve la versione inglese (IFERROR/XLOOKUP/UPPER/LOWER/IF con ','),
+    duplicare la funzione o parametrizzarla con un flag --locale.
+    """
     c = COLUMNS
     lines = [
-        "# Formule XLOOKUP da incollare nella colonna 'Estimated Value' (O) di MAIN.xlsx, riga 6.",
+        "# Formule CERCA.X da incollare nella colonna 'Estimated Value' (O) di MAIN.xlsx, riga 6.",
+        "# Versione per Excel ITALIANO (nomi funzione localizzati, separatore ';').",
         "# IMPORTANTE: prices_cache.xlsx deve essere nella stessa cartella di MAIN.xlsx.",
-        "# Trascina la formula da O6 fino all'ultima riga del foglio.",
+        "#",
+        "# Per ogni foglio: copia la formula in O6 e trascina giu' fino all'ULTIMA riga",
+        "# del catalogo (anche carte non possedute: mostreranno 'n/d' finche' non scrivi 'Y'",
+        "# in colonna I e rilanci lo script).",
         "",
     ]
     for sheet_name, exp_id in expansions.items():
         if exp_id is None:
-            continue  # skippa fogli senza expansion_id assegnato
+            continue
         formula = (
-            f'=IFERROR(XLOOKUP("{sheet_name}"&"|"&{c["collector"]}6&"|"'
-            f'&UPPER({c["condition"]}6)&"|"&LOWER({c["language"]}6)&"|"'
-            f'&IF({c["reverse_holo"]}6,"true","false")&"|"'
-            f'&IF({c["first_edition"]}6,"true","false"),'
-            f"'[prices_cache.xlsx]Latest'!$A:$A,'[prices_cache.xlsx]Latest'!$B:$B),\"n/d\")"
+            f'=SE.ERRORE(CERCA.X("{sheet_name}"&"|"&{c["collector"]}6&"|"'
+            f'&MAIUSC({c["condition"]}6)&"|"&MINUSC({c["language"]}6)&"|"'
+            f'&SE({c["reverse_holo"]}6;"true";"false")&"|"'
+            f'&SE({c["first_edition"]}6;"true";"false");'
+            f"'[prices_cache.xlsx]Latest'!$A:$A;'[prices_cache.xlsx]Latest'!$B:$B);\"n/d\")"
         )
         lines.append(f"## {sheet_name}")
         lines.append(formula)

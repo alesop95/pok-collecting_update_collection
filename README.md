@@ -83,7 +83,11 @@ python scripts\update_prices.py
 python scripts\update_prices.py --all
 ```
 
-Al primo run completo, copia le formule da `lookup_formulas.txt` nella colonna `O` di MAIN.xlsx (una formula per foglio, trascinala dalla riga 6 in giù).
+Al primo run completo, copia le formule da `lookup_formulas.txt` nella colonna `O` di MAIN.xlsx — una formula per foglio, trascinata dalla riga 6 fino all'**ultima riga del catalogo** (anche le carte non possedute: mostreranno "n/d" finché non scrivi "Y" in colonna I).
+
+> **Excel italiano**: le formule generate sono in italiano (`CERCA.X`/`SE.ERRORE`/`MAIUSC`/`MINUSC`/`SE`) con separatore `;`. Se hai Excel inglese o regionale diverso, va modificata la funzione `generate_formula_snippets` in `scripts/update_prices.py`.
+
+**Quando ottieni una carta nuova**: il catalogo è già pre-popolato in ogni foglio, quindi non devi aggiungere righe. Trovi la riga della carta nel set giusto, metti "Y" in colonna I, salvi. Al prossimo run lo script la prezza automaticamente — la formula CERCA.X la trovi già lì.
 
 ## Per dettagli tecnici
 

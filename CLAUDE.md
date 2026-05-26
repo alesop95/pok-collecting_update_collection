@@ -25,9 +25,9 @@
 
 ## TL;DR e stato attuale
 
-**Cosa fa:** uno script Python legge MAIN.xlsx (read-only), interroga l'API CardTrader per ogni carta, scrive lo storico prezzi su SQLite e una vista corrente su `prices_cache.xlsx`. MAIN.xlsx ha una formula XLOOKUP nella colonna "Estimated Value" che pesca dal cache.
+**Cosa fa:** uno script Python legge MAIN.xlsx (read-only), interroga l'API CardTrader per ogni carta posseduta, scrive lo storico prezzi su SQLite e una vista corrente su `prices_cache.xlsx`. MAIN.xlsx ha una formula XLOOKUP nella colonna "Estimated Value" che pesca dal cache.
 
-**Stato:**
+**Stato a fine sessione di sviluppo (2026-05-26):**
 - ✅ Client CardTrader API funzionante con caching dei blueprint e backoff su rate limit
 - ✅ Mapping condizioni Cardmarket → CardTrader implementato e testato
 - ✅ Pipeline read-only su MAIN.xlsx (niente più corruzioni)
@@ -36,13 +36,22 @@
 - ✅ Generatore automatico di formule XLOOKUP (`lookup_formulas.txt`)
 - ✅ Script `discover_expansions.py` per popolamento automatico expansions.json via API
 - ✅ **Mappa colonne MAIN.xlsx verificata** sul file reale (55 fogli totali)
-- ✅ **Decisioni ownership/quantity chiuse**: colonna I = "posseduta sì/no", filtro `only_owned=True` di default. Colonna H (Quantity) ignorata (utente non colleziona doppioni).
+- ✅ **Decisioni ownership/quantity chiuse**: colonna I = "posseduta sì/no", filtro `only_owned=True` di default. Colonna H (Quantity) ignorata.
 - ✅ **`prices_cache.xlsx` viene salvato accanto a MAIN.xlsx** (non in cwd) per garantire che XLOOKUP funzioni indipendentemente da dove si lancia lo script.
-- ⏳ Compilazione di `expansions.json` con i set effettivi della collezione (via `discover_expansions.py`)
-- ⏳ Primo run end-to-end su MAIN.xlsx reale
-- ❓ Colonna L "Stamped": esiste una property dedicata su CardTrader (Prerelease/Staff/Worlds)? Per ora ignorata.
-- ⏳ Carte graded (PSA/Beckett): non supportate, pianificata fase futura
-- ⏳ Webapp (FastAPI + SQLite + HTML): in roadmap per "templatizzazione" futura, non prima della stabilizzazione del flusso Excel
+- ✅ **Path centralizzati** via `scripts/paths.py` (BASE_DIR + default workbook)
+- ✅ **Token via .env** project-scoped (NON `setx` system-wide), caricato da `python-dotenv` in `paths.py`
+- ✅ **Version control** impostato per repo pubblica: `.gitignore` esclude secret, venv, generati, dati personali. `MAIN.xlsx` e `expansions.json` versionati.
+- ✅ **Workflow documentato** in `workflow.svg` (ignorato dal repo, documentazione personale)
+- ✅ **Formule generate in italiano** (CERCA.X con separatore `;`) per Excel italiano
+- ✅ **MAIN.xlsx pre-popolato confermato**: ogni foglio contiene il catalogo completo del set, l'utente segna "Y" solo per le possedute
+- ⏳ **Primo run vero ancora da eseguire**. L'utente deve: creare venv → installare deps → setup .env → `discover_expansions.py` → primo run su `--sheet GYM_HEROES` per validare → setup formule CERCA.X in MAIN.xlsx (trascinate sull'intero catalogo di ogni foglio) → run completo.
+- ❓ Colonna L "Stamped": esiste una property dedicata su CardTrader (Prerelease/Staff/Worlds)? Per ora ignorata. Verificare con `cardtrader-api-explorer` quando rilevante.
+- ⏳ Carte graded (PSA/Beckett): non supportate, pianificata fase futura.
+- ⏳ Webapp (FastAPI + SQLite + HTML): in roadmap "step 4" per templatizzazione, dopo stabilizzazione del flusso Excel.
+
+**Cosa probabilmente troveremo nel primo run reale:**
+- Alcuni set vintage giapponesi (VMC, VS, CARDASS, ANA_CAMPAIGN, MASAKI...) potrebbero non avere un match in CardTrader → `null` in expansions.json. Risolvere a mano con `cardtrader-api-explorer`.
+- Carte con apostrofo nel nome ("Erika's Victreebel") o nomi con suffissi particolari potrebbero non matchare al primo colpo: in caso, irrobustire `find_blueprint_robust` in `helpers.py`.
 
 ---
 
@@ -160,6 +169,10 @@ Queste sono le scelte che hanno richiesto iterazione e tempo. **Cambiarle senza 
 
 13. **Secret via `.env` (project-scoped), non `setx` (system-wide).** Il `CT_AUTH_TOKEN` vive in `update_collection/.env`, caricato da `python-dotenv` dentro `paths.py`. Motivazione: il token appartiene al progetto, non alla workstation. `setx` accoppia macchina e progetto (rimane nel profilo Windows anche se cancelli il repo), espone il token a *ogni* script Python dell'utente, e non è portabile a CI/CD o container. `.env` confina il secret al progetto, è ignorato da Git, e l'env var di processo lo sovrascrive se serve (utile in pipeline automatizzate). Tradeoff: serve installare `python-dotenv` (dipendenza minima, già in `requirements.txt`).
 
+14. **Formule generate in italiano (CERCA.X), separatore `;`.** L'utente usa Excel italiano: `generate_formula_snippets` in `update_prices.py` produce `SE.ERRORE/CERCA.X/MAIUSC/MINUSC/SE` con `;` come separatore. Per la versione inglese (`IFERROR/XLOOKUP/UPPER/LOWER/IF` con `,`) duplicare la funzione o parametrizzarla con un flag CLI `--locale`. Excel non converte le formule incollate come testo, quindi la lingua del generatore deve combaciare con la lingua di Excel.
+
+15. **MAIN.xlsx ha cataloghi pre-popolati per ogni set.** Ogni foglio contiene tutte le carte del set (non solo quelle possedute). L'utente segna le possedute con "Y" in colonna I. Conseguenze: (a) la formula CERCA.X va trascinata su tutte le righe del catalogo, non solo le possedute — le righe non possedute mostrano "n/d", che è il comportamento atteso; (b) quando si ottiene una carta nuova, basta scrivere "Y" in colonna I sulla riga già esistente: niente nuove formule da aggiungere. Al successivo run dello script (con `--only-owned` default), la nuova carta viene processata e la formula trova il prezzo nel cache.
+
 ---
 
 ## Configurazione
@@ -204,14 +217,14 @@ python -c "from dotenv import dotenv_values; print('OK' if dotenv_values().get('
 
 ## Mappa colonne MAIN.xlsx
 
-**Verificata sul file reale.** Layout uguale in tutti i 55 fogli set.
+**Verificata sul file reale.** Layout uguale in tutti i 55 fogli set. **Ogni foglio è un catalogo pre-popolato del set**: tutte le carte del set hanno già la loro riga, anche quelle non possedute. La colonna I ("Y") segna le possedute.
 
 - **Riga 1**: vuota
 - **Riga 2**: `B='HOME' C='Link' D=<URL Bulbapedia del set>`
 - **Riga 3**: `C='Card set name' D=<nome ufficiale set>` ← usato da `discover_expansions.py` per matching API
 - **Riga 4**: vuota
 - **Riga 5**: header colonne
-- **Riga 6+**: dati carte
+- **Riga 6+**: dati carte (TUTTE le carte del set)
 
 | Lettera | Colonna           | Letta dallo script? | Note                                                        |
 |---------|-------------------|---------------------|-------------------------------------------------------------|
