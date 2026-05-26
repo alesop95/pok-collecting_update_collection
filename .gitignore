@@ -1,0 +1,69 @@
+# =========================
+# Secret e configurazione locale
+# =========================
+.env
+.env.local
+.env.*.local
+CLAUDE.local.md
+
+# =========================
+# Diagramma
+# =========================
+workflow.svg
+
+# =========================
+# Virtual environment (NON versionare mai, e nemmeno sincronizzare su Drive)
+# =========================
+.venv/
+venv/
+env/
+
+# =========================
+# File generati dalla pipeline
+# =========================
+prices.db
+prices.db-journal
+prices.db-wal
+prices.db-shm
+prices_cache.xlsx
+lookup_formulas.txt
+.cache/
+
+# =========================
+# Lock files di Excel (temporanei, mai versionare)
+# =========================
+~$*.xlsx
+
+# =========================
+# Dati personali utente (es. info_VINTED con annunci/vendite)
+# =========================
+data/
+
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# =========================
+# Editor e OS
+# =========================
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# Backup degli script di prova (mantenere fuori dal repo)
+# =========================
+old_scripts_di_prova/

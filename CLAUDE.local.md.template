@@ -1,0 +1,43 @@
+# CLAUDE.local.md — settings personali (NON committare)
+
+> Template per i settings personali. Copialo, rinomina senza l'estensione `.template`, e compilalo. Convenzione Claude Code: i file `.local.md` sono ignorati dal versioning (vedi `.gitignore`).
+
+## Path MAIN.xlsx
+
+Default: `update_collection/MAIN.xlsx` (gia' nella root del progetto).
+
+Se per qualche motivo lo tieni altrove, qui c'e' il path effettivo:
+
+```
+C:\path\diverso\MAIN.xlsx
+```
+
+## Venv attivazione
+
+```cmd
+cd C:\percorso\pokecollecting\update_collection
+.venv\Scripts\activate
+```
+
+## Token CardTrader
+
+Il token vive in `.env` (anch'esso ignorato da Git, vedi `.gitignore`). NON scriverlo qui in chiaro.
+
+Procedura una tantum per popolare `.env`:
+
+```cmd
+copy .env.example .env
+notepad .env
+```
+
+Verifica che sia stato caricato correttamente:
+
+```cmd
+python -c "from dotenv import dotenv_values; print('OK' if dotenv_values().get('CT_AUTH_TOKEN','').startswith('eyJ') else 'MANCANTE')"
+```
+
+Quando il token scade (validita' tipica diversi mesi), generane uno nuovo dal pannello CardTrader e sostituiscilo nel `.env`.
+
+## Note personali
+
+(scrivi qui qualunque cosa serva a te ma non al pubblico — es. password manager dove tieni il token, scadenza del JWT CardTrader, ecc.)
