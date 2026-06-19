@@ -78,3 +78,6 @@ workflow.svg
 # Backup degli script di prova (mantenere fuori dal repo)
 # =========================
 old_scripts_di_prova/
+
+# Materiali archiviati dal contenitore (non versionati)
+_archive/
