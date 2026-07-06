@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "code-context": {
+      "command": "npx",
+      "args": ["-y", "code-context-provider-mcp@latest"]
+    }
+  }
+}
