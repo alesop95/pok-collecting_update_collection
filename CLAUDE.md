@@ -253,17 +253,13 @@ python -c "from dotenv import dotenv_values; print('OK' if dotenv_values().get('
 
 ### Fogli (55 totali)
 
-**Set Pokémon WOTC era (mappabili 1:1 a CardTrader):**
-BASE_SET, JUNGLE, FOSSIL, BASE_SET_2, TEAM_ROCKET, GYM_HEROES, GYM_CHALLENGE, NEO_GENESIS, NEO_DISCOVERY, NEO_REVELATION, NEO_DESTINY, LEGENDARY_COLLECTION, EXPEDITION, ACQUAPOLIS, SKYRIDGE.
+**Set Pokémon WOTC era (mappabili 1:1 a CardTrader):** BASE_SET, JUNGLE, FOSSIL, BASE_SET_2, TEAM_ROCKET, GYM_HEROES, GYM_CHALLENGE, NEO_GENESIS, NEO_DISCOVERY, NEO_REVELATION, NEO_DESTINY, LEGENDARY_COLLECTION, EXPEDITION, ACQUAPOLIS, SKYRIDGE.
 
-**Set EX era (Nintendo, 2003-2007):**
-EX_RUBY_SAPPHIRE, EX_SANDSTORM, EX_DRAGON, EX_TEAM_MAGMA_ACQUA, EX_HIDDEN_LEGENDS, EX_FIRERED_LEAFGREEN, EX_TEAM_ROCKET_RETURNS, EX_DEOXYS, EX_EMERALD, EX_UNSEEN_FORCES, EX_DELTA_SPECIES, EX_LEGEND_MAKER, EX_HOLON_PHANTOMS, EX_CRYSTAL_GUARDIANS, EX_DRAGON_FRONTIERS, EX_POWER_KEEPERS.
+**Set EX era (Nintendo, 2003-2007):** EX_RUBY_SAPPHIRE, EX_SANDSTORM, EX_DRAGON, EX_TEAM_MAGMA_ACQUA, EX_HIDDEN_LEGENDS, EX_FIRERED_LEAFGREEN, EX_TEAM_ROCKET_RETURNS, EX_DEOXYS, EX_EMERALD, EX_UNSEEN_FORCES, EX_DELTA_SPECIES, EX_LEGEND_MAKER, EX_HOLON_PHANTOMS, EX_CRYSTAL_GUARDIANS, EX_DRAGON_FRONTIERS, EX_POWER_KEEPERS.
 
-**Set/raccolte vintage giapponesi (mapping API incerto):**
-SOUTHERN_ISLAND, WOC, WOC_PROMO, VENDING_MACHINE_CARDS, VMC_SERIES1_BLUE, VMC_SERIES2_RED, VMC_SERIES3_GREEN, VS, VS_PROMOTIONAL, THEATER_LTD_VS_PACK, MOVIE_VS_DEOXYS, MOVIE_VS_LUCARIO, BEST_OF_GAME, CARDASS, PM_CARDDASS, UNNUMBERED_PROMOTIONAL, ANA_CAMPAIGN, MASAKI, UNNUMBERED_OWNER.
+**Set/raccolte vintage giapponesi (mapping API incerto):** SOUTHERN_ISLAND, WOC, WOC_PROMO, VENDING_MACHINE_CARDS, VMC_SERIES1_BLUE, VMC_SERIES2_RED, VMC_SERIES3_GREEN, VS, VS_PROMOTIONAL, THEATER_LTD_VS_PACK, MOVIE_VS_DEOXYS, MOVIE_VS_LUCARIO, BEST_OF_GAME, CARDASS, PM_CARDDASS, UNNUMBERED_PROMOTIONAL, ANA_CAMPAIGN, MASAKI, UNNUMBERED_OWNER.
 
-**Fogli da escludere (non set):**
-NOTES_AND_TO_DO_LIST, INDEX_TCG, PROMO (vuoto), EX-SERIES (raggruppamento), VS_ERA (raggruppamento). Gestiti in `discover_expansions.EXCLUDED_SHEETS`.
+**Fogli da escludere (non set):** NOTES_AND_TO_DO_LIST, INDEX_TCG, PROMO (vuoto), EX-SERIES (raggruppamento), VS_ERA (raggruppamento). Gestiti in `discover_expansions.EXCLUDED_SHEETS`.
 
 ---
 
@@ -368,26 +364,19 @@ get_blueprints(1480, force_refresh=True)
 
 Problemi storici risolti. **Sintomo → causa → fix.** Ricaderci è regresso.
 
-1. **MAIN.xlsx corrotto, formule perse, immagini scomparse.**
-   Causa: `openpyxl` riscrive l'XML da zero. Fix: usare `xlwings`. **Mai** scrivere su MAIN.xlsx con openpyxl.
+1. **MAIN.xlsx corrotto, formule perse, immagini scomparse.** Causa: `openpyxl` riscrive l'XML da zero. Fix: usare `xlwings`. **Mai** scrivere su MAIN.xlsx con openpyxl.
 
-2. **Lo script scrive lo stesso valore da M31 a M57 invece che solo M31.**
-   Causa: iterazione su `DataFrame.values` con `enumerate(start=start_row)`. Fix: loop esplicito `for row in range(start_row, end_row + 1)` con `sheet.range(f"{col}{row}").value = scalar`. **Mai** usare DataFrame iteration per scrittura cella-singola.
+2. **Lo script scrive lo stesso valore da M31 a M57 invece che solo M31.** Causa: iterazione su `DataFrame.values` con `enumerate(start=start_row)`. Fix: loop esplicito `for row in range(start_row, end_row + 1)` con `sheet.range(f"{col}{row}").value = scalar`. **Mai** usare DataFrame iteration per scrittura cella-singola.
 
-3. **"Failed writing body" su `curl > output.json`.**
-   Causa: path con spazi non quotato. Fix: quotare l'intero path di output. Nel codice attuale non rilevante (usiamo `requests`, non `curl`).
+3. **"Failed writing body" su `curl > output.json`.** Causa: path con spazi non quotato. Fix: quotare l'intero path di output. Nel codice attuale non rilevante (usiamo `requests`, non `curl`).
 
-4. **`jq` non riconosciuto.**
-   Causa: file chiamato `jq-windows-amd64.exe`. Fix: rinominarlo `jq.exe` o usare il nome completo. Nel codice attuale non rilevante.
+4. **`jq` non riconosciuto.** Causa: file chiamato `jq-windows-amd64.exe`. Fix: rinominarlo `jq.exe` o usare il nome completo. Nel codice attuale non rilevante.
 
-5. **Errore "writing dictionary to cell".**
-   Causa: si scriveva l'intero JSON di risposta API. Fix: estrarre solo il campo scalare (`price.cents/100`) prima della scrittura.
+5. **Errore "writing dictionary to cell".** Causa: si scriveva l'intero JSON di risposta API. Fix: estrarre solo il campo scalare (`price.cents/100`) prima della scrittura.
 
-6. **Token nel codice committato per sbaglio.**
-   Causa: hardcoded nelle prime versioni. Fix: `.env` letto via `python-dotenv` da `paths.py`, file ignorato da Git. **Mai** scrivere il token in chiaro nei file `.py` o committare `.env`.
+6. **Token nel codice committato per sbaglio.** Causa: hardcoded nelle prime versioni. Fix: `.env` letto via `python-dotenv` da `paths.py`, file ignorato da Git. **Mai** scrivere il token in chiaro nei file `.py` o committare `.env`.
 
-7. **403 sull'API Cardmarket.**
-   Causa strutturale: API pubblica chiusa da Cardmarket. Fix: abbandonare Cardmarket, restare su CardTrader. Non è un problema tecnico aggirabile.
+7. **403 sull'API Cardmarket.** Causa strutturale: API pubblica chiusa da Cardmarket. Fix: abbandonare Cardmarket, restare su CardTrader. Non è un problema tecnico aggirabile.
 
 ---
 
